@@ -6,6 +6,9 @@ const { MongoClient } = require("mongodb");
 const uri ="mongodb+srv://dbUser:v13cHlF4Kfzhj8gz@rkv.xyupm.mongodb.net/myFirstDatabase?retryWrites=true&w=majority";
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
 
+const database = client.db("rkv");
+const contactMessage = database.collection("super_doodle");
+
 // App constants
 const port = process.env.PORT || 5000;
 const apiPrefix = '/api';
@@ -74,9 +77,6 @@ router.post('/accounts', (req, res) => {
 
   try {
     await client.connect();
-    
-    const database = client.db("rkv");
-    const contactMessage = database.collection("super_doodle");
     const timeStamp = Date.now();
     var currentdate = new Date(); 
     var dateTimeText = "Time: " + currentdate.getDate() + "/"
@@ -103,6 +103,14 @@ router.post('/accounts', (req, res) => {
   }
 
   return res.status(201).json(account);
+});
+
+// Get all accounts
+router.get('/accounts', (req, res) => {
+
+  let data = contactMessage.find({});
+
+  return res.json(data);
 });
 
 // Get all data for the specified account
