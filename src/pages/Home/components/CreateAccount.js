@@ -13,20 +13,20 @@ export default function CreateAccount() {
   const [successMsg, setSuccessMsg] = React.useState("none");
   const [errorMsg, setErrorMsg] = React.useState("none");
   const [formDisplay, setFormDisplay] = React.useState("block");
-  const [alignment, setAlignment] = React.useState("web");
-  const [nameError, setNameError] = React.useState({
+
+  const [userError, setUserError] = React.useState({
     status: false,
     msg: null,
   });
-  const [emailError, setEmailError] = React.useState({
+  const [currencyError, setCurrencyError] = React.useState({
     status: false,
     msg: null,
   });
-  const [subjectError, setSubjectError] = React.useState({
+  const [balanceError, setBalanceError] = React.useState({
     status: false,
     msg: null,
   });
-  const [messageError, setMessageError] = React.useState({
+  const [descriptionError, setDescriptionError] = React.useState({
     status: false,
     msg: null,
   });
@@ -34,55 +34,46 @@ export default function CreateAccount() {
   const handleValidation = (name, email, subject, message) => {
     let formIsValid = true;
 
-    function checkName(name) {
-      //Name
-      if (!name) {
+    function checkUser(valData) {
+      if (!valData) {
         formIsValid = false;
-        setNameError({ status: true, msg: "Cannot be empty" });
-      } else if (typeof name !== "undefined") {
-        if (!name.match(/^[a-zA-Z]+(\s[a-zA-Z]+)?$/)) {
-          formIsValid = false;
-          setNameError({ status: true, msg: "Only letters" });
-        } else {
-          setNameError({ status: false, msg: null });
-        }
+        setUserError({ status: true, msg: "Cannot be empty" });
+      } else {
+        setUserError({ status: false, msg: null });
       }
     }
 
-    function checkSubject(subject) {
-      //Name
-      if (!subject) {
+    function checkCurrency(valData) {
+      if (!valData) {
         formIsValid = false;
-        setSubjectError({ status: true, msg: "Cannot be empty" });
-      } else if (typeof subject !== "undefined") {
-        if (subject.match(/^[\s]+$/)) {
-          formIsValid = false;
-          setSubjectError({ status: true, msg: "Enter a valid subject" });
-        } else {
-          setSubjectError({ status: false, msg: null });
-        }
+        setCurrencyError({ status: true, msg: "Cannot be empty" });
+      } else {
+        setCurrencyError({ status: false, msg: null });
       }
     }
 
-    function checkMessage(message) {
-      //Name
-      if (!message) {
+    function checkBalance(valData) {
+      if (!valData) {
         formIsValid = false;
-        setMessageError({ status: true, msg: "Cannot be empty" });
-      } else if (typeof message !== "undefined") {
-        if (message.match(/^[\s]+$/)) {
-          formIsValid = false;
-          setMessageError({ status: true, msg: "Enter a valid message" });
-        } else {
-          setMessageError({ status: false, msg: null });
-        }
+        setBalanceError({ status: true, msg: "Cannot be empty" });
+      } else {
+        setBalanceError({ status: false, msg: null });
       }
     }
 
-    checkName(name);
-    checkSubject(email);
-    checkSubject(subject);
-    checkMessage(message);
+    function checkDescription(valData) {
+      if (!valData) {
+        formIsValid = false;
+        setDescriptionError({ status: true, msg: "Cannot be empty" });
+      } else {
+        setDescriptionError({ status: false, msg: null });
+      }
+    }
+
+    checkUser(name);
+    checkCurrency(email);
+    checkBalance(subject);
+    checkDescription(message);
 
     return formIsValid;
   };
@@ -105,9 +96,9 @@ export default function CreateAccount() {
         currency: data.get("currency"),
         balance: data.get("balance"),
         description: data.get("description"),
-       };
-       
-       console.log(msgData);
+      };
+
+      console.log(msgData);
 
       axios
         .post("https://api.superdoodle.rkv.one/api/accounts", msgData)
@@ -125,22 +116,6 @@ export default function CreateAccount() {
     }
   };
 
-  const getData = (event) => {
-    const eleData = new FormData(event.currentTarget);
-    let userID = eleData.get("userID");
-    axios
-      .get("https://api.superdoodle.rkv.one/api/accounts/" + userID)
-      .then(function (response) {
-        console.log(response);
-      })
-      .catch(function (error) {
-        console.log(error);
-      })
-      .then(function () {
-        // always executed
-      });
-  }
-
   return (
     <Box
       sx={{
@@ -157,10 +132,10 @@ export default function CreateAccount() {
         }}
         open={open}
       >
-        <CircularProgress color="inherit" />
+        <CircularProgress sx={{ color: "#1565c0" }} />
       </Backdrop>
       <Typography
-        variant="h6"
+        variant="subtitle2"
         gutterBottom
         component="div"
         sx={{ color: "#000000", display: successMsg }}
@@ -168,7 +143,7 @@ export default function CreateAccount() {
         Details saved successfully!
       </Typography>
       <Typography
-        variant="h6"
+        variant="subtitle2"
         gutterBottom
         component="div"
         sx={{ color: "#000000", display: errorMsg }}
@@ -177,7 +152,7 @@ export default function CreateAccount() {
       </Typography>
       <Typography
         component="h1"
-        variant="h5"
+        variant="h6"
         sx={{ color: "#000000", display: formDisplay }}
       >
         Account Details
@@ -198,9 +173,11 @@ export default function CreateAccount() {
               id="user"
               label="User"
               autoFocus
+              multiline
+              rows={1}
               size="small"
-              error={nameError.status}
-              helperText={nameError.msg}
+              error={userError.status}
+              helperText={userError.msg}
             />
           </Grid>
           <Grid item xs={12}>
@@ -211,9 +188,11 @@ export default function CreateAccount() {
               label="Currency"
               name="currency"
               type="text"
+              multiline
+              rows={1}
               size="small"
-              error={emailError.status}
-              helperText={emailError.msg}
+              error={currencyError.status}
+              helperText={currencyError.msg}
             />
           </Grid>
           <Grid item xs={12}>
@@ -224,9 +203,11 @@ export default function CreateAccount() {
               label="Balance"
               type="number"
               id="balance"
+              multiline
+              rows={1}
               size="small"
-              error={subjectError.status}
-              helperText={subjectError.msg}
+              error={balanceError.status}
+              helperText={balanceError.msg}
             />
           </Grid>
           <Grid item xs={12}>
@@ -238,10 +219,10 @@ export default function CreateAccount() {
               type="text"
               id="description"
               multiline
-              rows={4}
+              rows={1}
               size="small"
-              error={messageError.status}
-              helperText={messageError.msg}
+              error={descriptionError.status}
+              helperText={descriptionError.msg}
             />
           </Grid>
         </Grid>
@@ -249,7 +230,7 @@ export default function CreateAccount() {
           type="submit"
           fullWidth
           variant="contained"
-          sx={{ mt: 6, mb: 2 }}
+          sx={{ mt: 2, mb: 2 }}
         >
           Submit
         </Button>

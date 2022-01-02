@@ -100,7 +100,7 @@ const Label = styled(Paper)(({ theme }) => ({
 
 export default function Pictures() {
   return (
-    <Box sx={{ maxWidth: '100%', height: 580, overflowY: 'scroll' }}>
+    <Box sx={{ maxWidth: '100%', height: 650, overflowY: 'scroll' }}>
       <Masonry columns={{ xs: 3, sm: 4 }} spacing={1}>
         {itemData.map((item, index) => (
             <Stack key={index}>

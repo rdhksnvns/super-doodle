@@ -18,20 +18,25 @@ export default function UpdateAccount() {
   const [currency, setCurrency] = React.useState();
   const [balance, setBalance] = React.useState();
   const [description, setDescription] = React.useState();
+  const [showForm, setShowForm] = React.useState(false);
 
-  const [nameError, setNameError] = React.useState({
+  const [userIDError, setUserIDError] = React.useState({
     status: false,
     msg: null,
   });
-  const [emailError, setEmailError] = React.useState({
+  const [userError, setUserError] = React.useState({
     status: false,
     msg: null,
   });
-  const [subjectError, setSubjectError] = React.useState({
+  const [currencyError, setCurrencyError] = React.useState({
     status: false,
     msg: null,
   });
-  const [messageError, setMessageError] = React.useState({
+  const [balanceError, setBalanceError] = React.useState({
+    status: false,
+    msg: null,
+  });
+  const [descriptionError, setDescriptionError] = React.useState({
     status: false,
     msg: null,
   });
@@ -39,55 +44,46 @@ export default function UpdateAccount() {
   const handleValidation = (name, email, subject, message) => {
     let formIsValid = true;
 
-    function checkName(name) {
-      //Name
-      if (!name) {
+    function checkUser(valData) {
+      if (!valData) {
         formIsValid = false;
-        setNameError({ status: true, msg: "Cannot be empty" });
-      } else if (typeof name !== "undefined") {
-        if (!name.match(/^[a-zA-Z]+(\s[a-zA-Z]+)?$/)) {
-          formIsValid = false;
-          setNameError({ status: true, msg: "Only letters" });
-        } else {
-          setNameError({ status: false, msg: null });
-        }
+        setUserError({ status: true, msg: "Cannot be empty" });
+      } else {
+        setUserError({ status: false, msg: null });
       }
     }
 
-    function checkSubject(subject) {
-      //Name
-      if (!subject) {
+    function checkCurrency(valData) {
+      if (!valData) {
         formIsValid = false;
-        setSubjectError({ status: true, msg: "Cannot be empty" });
-      } else if (typeof subject !== "undefined") {
-        if (subject.match(/^[\s]+$/)) {
-          formIsValid = false;
-          setSubjectError({ status: true, msg: "Enter a valid subject" });
-        } else {
-          setSubjectError({ status: false, msg: null });
-        }
+        setCurrencyError({ status: true, msg: "Cannot be empty" });
+      } else {
+        setCurrencyError({ status: false, msg: null });
       }
     }
 
-    function checkMessage(message) {
-      //Name
-      if (!message) {
+    function checkBalance(valData) {
+      if (!valData) {
         formIsValid = false;
-        setMessageError({ status: true, msg: "Cannot be empty" });
-      } else if (typeof message !== "undefined") {
-        if (message.match(/^[\s]+$/)) {
-          formIsValid = false;
-          setMessageError({ status: true, msg: "Enter a valid message" });
-        } else {
-          setMessageError({ status: false, msg: null });
-        }
+        setBalanceError({ status: true, msg: "Cannot be empty" });
+      } else {
+        setBalanceError({ status: false, msg: null });
       }
     }
 
-    checkName(name);
-    checkSubject(email);
-    checkSubject(subject);
-    checkMessage(message);
+    function checkDescription(valData) {
+      if (!valData) {
+        formIsValid = false;
+        setDescriptionError({ status: true, msg: "Cannot be empty" });
+      } else {
+        setDescriptionError({ status: false, msg: null });
+      }
+    }
+
+    checkUser(name);
+    checkCurrency(email);
+    checkBalance(subject);
+    checkDescription(message);
 
     return formIsValid;
   };
@@ -105,17 +101,21 @@ export default function UpdateAccount() {
     if (valStatus) {
       setOpen(true);
 
+      let id = data.get("readOnlyID");
+      console.log(id);
+      console.log(data.get("user"));
+
       const msgData = {
         user: data.get("user"),
         currency: data.get("currency"),
         balance: data.get("balance"),
         description: data.get("description"),
-       };
-       
-       console.log(msgData);
+      };
+
+      console.log(msgData);
 
       axios
-        .post("https://api.superdoodle.rkv.one/api/accounts", msgData)
+        .post("https://api.superdoodle.rkv.one/api/accounts/" + id, msgData)
         .then(function (response) {
           setSuccessMsg("block");
           setFormDisplay("none");
@@ -134,26 +134,33 @@ export default function UpdateAccount() {
     event.preventDefault();
     const eleData = new FormData(event.currentTarget);
     let userID = eleData.get("userID");
-    axios
-      .get("https://api.superdoodle.rkv.one/api/accounts/" + userID)
-      .then(function (response) {
-        console.log(response);
-        let cID = response.data.id;
-        setID(cID);
-        setUser(response.data.user);
-        setCurrency(response.data.currency);
-        setBalance(response.data.balance);
-        console.log(response.data.balance);
-        console.log(balance);
-        setDescription(response.data.description);
-      })
-      .catch(function (error) {
-        console.log(error);
-      })
-      .then(function () {
-        // always executed
-      });
-  }
+
+    if (userID) {
+      setOpen(true);
+      axios
+        .get("https://api.superdoodle.rkv.one/api/accounts/" + userID)
+        .then(function (response) {
+          console.log(response);
+          setID(response.data.id);
+          setUser(response.data.user);
+          setCurrency(response.data.currency);
+          setBalance(response.data.balance);
+          setDescription(response.data.description);
+
+          setUserIDError({ status: false, msg: null });
+          setShowForm(true);
+          setOpen(false);
+        })
+        .catch(function (error) {
+          if (error.response.status === 404) {
+            setUserIDError({ status: true, msg: "User not found" });
+          } else {
+            setUserIDError({ status: true, msg: "Something went wrong" });
+          }
+          setOpen(false);
+        });
+    }
+  };
 
   return (
     <Box
@@ -171,10 +178,10 @@ export default function UpdateAccount() {
         }}
         open={open}
       >
-        <CircularProgress sx={{color: "#1565c0"}} />
+        <CircularProgress sx={{ color: "#1565c0" }} />
       </Backdrop>
       <Typography
-        variant="h6"
+        variant="subtitle2"
         gutterBottom
         component="div"
         sx={{ color: "#000000", display: successMsg }}
@@ -182,18 +189,14 @@ export default function UpdateAccount() {
         Details saved successfully!
       </Typography>
       <Typography
-        variant="h6"
+        variant="subtitle2"
         gutterBottom
         component="div"
         sx={{ color: "#000000", display: errorMsg }}
       >
         Oops! Something went wrong.
       </Typography>
-      <Typography
-        component="h1"
-        variant="h5"
-        sx={{ color: "#000000", display: formDisplay }}
-      >
+      <Typography variant="h6" sx={{ color: "#000000", display: formDisplay }}>
         Update Account Details
       </Typography>
       <Box
@@ -212,8 +215,8 @@ export default function UpdateAccount() {
               type="number"
               id="userID"
               size="small"
-              error={subjectError.status}
-              helperText={subjectError.msg}
+              error={userIDError.status}
+              helperText={userIDError.msg}
             />
           </Grid>
         </Grid>
@@ -226,100 +229,110 @@ export default function UpdateAccount() {
           Get Data
         </Button>
       </Box>
-      <Box
-        component="form"
-        noValidate
-        onSubmit={handleSubmit}
-        sx={{ mt: 3, display: formDisplay }}
-      >
-        <Grid container spacing={2}>
-          
-          <Grid item xs={12}>
-            <TextField
-              required
-              fullWidth
-              name="id"
-              label="ID"
-              type="number"
-              id="id"
-              size="small"
-              defaultValue={ID}
-              InputProps={{
-                readOnly: true,
-              }}
-            />
-          </Grid>
-          <Grid item xs={12}>
-            <TextField
-              autoComplete="user"
-              name="user"
-              required
-              fullWidth
-              id="user"
-              label="User"
-              autoFocus
-              size="small"
-              error={nameError.status}
-              helperText={nameError.msg}
-              defaultValue={user}
-            />
-          </Grid>
-          <Grid item xs={12}>
-            <TextField
-              required
-              fullWidth
-              id="currency"
-              label="Currency"
-              name="currency"
-              type="text"
-              multiline
-              rows={1}
-              size="small"
-              error={emailError.status}
-              helperText={emailError.msg}
-              defaultValue={currency}
-            />
-          </Grid>
-          <Grid item xs={12}>
-            <TextField
-              required
-              fullWidth
-              name="balance"
-              label="Balance"
-              type="number"
-              id="balance"
-              size="small"
-              error={subjectError.status}
-              helperText={subjectError.msg}
-              defaultValue={balance}
-            />
-          </Grid>
-          <Grid item xs={12}>
-            <TextField
-              required
-              fullWidth
-              name="description"
-              label="Description"
-              type="text"
-              id="description"
-              multiline
-              rows={4}
-              size="small"
-              error={messageError.status}
-              helperText={messageError.msg}
-              defaultValue={description}
-            />
-          </Grid>
-        </Grid>
-        <Button
-          type="submit"
-          fullWidth
-          variant="contained"
-          sx={{ mt: 4, mb: 2 }}
+
+      {showForm ? (
+        <Box
+          component="form"
+          noValidate
+          onSubmit={handleSubmit}
+          sx={{ mt: 3, display: formDisplay }}
         >
-          Update
-        </Button>
-      </Box>
+          <Grid container spacing={2}>
+            <Grid item xs={12}>
+              <TextField
+                required
+                fullWidth
+                name="readOnlyID"
+                label="ID"
+                type="number"
+                id="readOnlyID"
+                multiline
+                rows={1}
+                size="small"
+                defaultValue={ID}
+                InputProps={{
+                  readOnly: true,
+                }}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                autoComplete="user"
+                name="user"
+                required
+                fullWidth
+                id="user"
+                label="User"
+                autoFocus
+                multiline
+                rows={1}
+                size="small"
+                error={userError.status}
+                helperText={userError.msg}
+                defaultValue={user}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                required
+                fullWidth
+                id="currency"
+                label="Currency"
+                name="currency"
+                type="text"
+                multiline
+                rows={1}
+                size="small"
+                error={currencyError.status}
+                helperText={currencyError.msg}
+                defaultValue={currency}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                required
+                fullWidth
+                name="balance"
+                label="Balance"
+                type="number"
+                id="balance"
+                multiline
+                rows={1}
+                size="small"
+                error={balanceError.status}
+                helperText={balanceError.msg}
+                defaultValue={balance}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                required
+                fullWidth
+                name="description"
+                label="Description"
+                type="text"
+                id="description"
+                multiline
+                rows={1}
+                size="small"
+                error={descriptionError.status}
+                helperText={descriptionError.msg}
+                defaultValue={description}
+              />
+            </Grid>
+          </Grid>
+          <Button
+            type="submit"
+            fullWidth
+            variant="contained"
+            sx={{ mt: 4, mb: 2 }}
+          >
+            Update
+          </Button>
+        </Box>
+      ) : (
+        <div></div>
+      )}
     </Box>
   );
 }
