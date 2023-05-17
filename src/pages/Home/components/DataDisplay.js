@@ -24,7 +24,7 @@ export default function DataDisplay() {
 
   const handleLoadData = () => {
     console.log("Loading data...");
-    axios.get('https://api.superdoodle.rkv.one/api/accounts')
+    axios.get('https://api.rkv.one/super-doodle/v1/api/accounts')
     .then(function (response) {
       // handle success
       let pRows = [];

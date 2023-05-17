@@ -101,7 +101,7 @@ export default function CreateAccount() {
       console.log(msgData);
 
       axios
-        .post("https://api.superdoodle.rkv.one/api/accounts", msgData)
+        .post("https://api.rkv.one/super-doodle/v1/api/accounts", msgData)
         .then(function (response) {
           setSuccessMsg("block");
           setFormDisplay("none");

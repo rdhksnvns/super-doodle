@@ -115,7 +115,7 @@ export default function UpdateAccount() {
       console.log(msgData);
 
       axios
-        .post("https://api.superdoodle.rkv.one/api/accounts/" + id, msgData)
+        .post("https://api.rkv.one/super-doodle/v1/api/accounts/" + id, msgData)
         .then(function (response) {
           setSuccessMsg("block");
           setFormDisplay("none");
@@ -138,7 +138,7 @@ export default function UpdateAccount() {
     if (userID) {
       setOpen(true);
       axios
-        .get("https://api.superdoodle.rkv.one/api/accounts/" + userID)
+        .get("https://api.rkv.one/super-doodle/v1/api/accounts/" + userID)
         .then(function (response) {
           console.log(response);
           setID(response.data.id);
